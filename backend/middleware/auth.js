@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 
 const JWT_SECRET = 'your_jwt_secret_here';
 
-export default async function authMiddleware(req, res, next) {
+export default async function authMiddleware(req,res,next) {
     //grab the token
 
     const authHeader = req.headers.authorization;

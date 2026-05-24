@@ -81,7 +81,7 @@ export async function loginUser(req, res) {
             });
         }
         const match = await bcrypt.compare(password, user.password);
-         if(!user) {
+         if(!match) {
             return res.status(401).json({
                 success: false,
                 message: "Invalid email or password"
@@ -179,7 +179,7 @@ export async function updateProfile(req, res) {
 //to change user password
 export async function updatePassword(req, res) {
     const { currentPassword, newPassword } = req.body;
-    if(!currentPassword || !newPassword || ! newPassword.length < 8) {
+    if(!currentPassword || !newPassword || newPassword.length < 8) {
         return res.status(400).json({
             success: false,
             message: "Password invalid or too short."
@@ -188,7 +188,7 @@ export async function updatePassword(req, res) {
     try {
         const user = await User.findById(req.user.id).select("password");
         if(!user) {
-            return res.status(401).json({
+            return res.status(404).json({
                 success: false,
                 message: "User not found."
             })
@@ -206,7 +206,7 @@ export async function updatePassword(req, res) {
         res.json({
             success: true,
             message: "Password changed"
-        })
+        });
     } 
    catch (err) {
         console.error(err);
