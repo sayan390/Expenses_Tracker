@@ -1,8 +1,8 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { sidebarStyles, cn } from "../assets/dummyStyles";
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation, useNavigate, Link } from "react-router-dom"; // Added Link import
-import { Home, ArrowUp, ArrowDown, User, HelpCircle, LogOut, X, Menu } from 'lucide-react'; // Added missing icon imports (Adjust if using a different package)
+import { useLocation, useNavigate, Link } from "react-router-dom"; 
+import { Home, ArrowUp, ArrowDown, User, HelpCircle, LogOut, X, Menu } from 'lucide-react'; 
 
 const MENU_ITEMS = [
   { text: "Dashboard", path: "/", icon: <Home size={20} /> },
@@ -17,10 +17,13 @@ const Sidebar = ({ user, isCollapsed, setIsCollapsed }) => {
   const sidebarRef = useRef(null);
 
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeHover, setActiveHover] = useState(null); // Fixed typo from setActiveOpen to setActiveHover
+  const [activeHover, setActiveHover] = useState(null); 
 
-  const { name: username = "User", email = "user@example.com" } = user || {};
-  const initial = username.charAt(0).toUpperCase(); // Fixed chartAt -> charAt AND topUpperCase -> toUpperCase
+  // ✅ FIX: Compute values dynamically on every render cycle.
+  // This safely checks both `user.name` and `user.username` while removing whitespace bugs.
+  const username = user?.name?.trim() || user?.username?.trim() || "User";
+  const email = user?.email?.trim() || "user@example.com";
+  const initial = username.charAt(0).toUpperCase() || "U";
 
   // to check for overflow in mobile
   useEffect(() => {
@@ -104,10 +107,7 @@ const Sidebar = ({ user, isCollapsed, setIsCollapsed }) => {
             </motion.div>
           </button>
 
-          {/* Render your Menu Items List Here if needed using `MENU_ITEMS.map(renderMenuItem)` */}
-        
-
-          {/* Fixed useProfileContainer typo to userProfileContainer */}
+          {/* User Profile Container */}
           <div className={cn(sidebarStyles.userProfileContainer.base,
             isCollapsed
               ? sidebarStyles.userProfileContainer.collapsed
@@ -130,11 +130,13 @@ const Sidebar = ({ user, isCollapsed, setIsCollapsed }) => {
               )}
             </div>
           </div>
+          
           <div className="flex-1 overflow-y-auto py-4 custom-scrollbar">
            <ul className={sidebarStyles.menuList.base}>
             {MENU_ITEMS.map(renderMenuItem)}
            </ul>
           </div>
+          
           <div className={cn(
             sidebarStyles.footerContainer.base,
             isCollapsed ? sidebarStyles.footerContainer.collapsed : sidebarStyles.footerContainer.expanded
@@ -156,6 +158,7 @@ const Sidebar = ({ user, isCollapsed, setIsCollapsed }) => {
           </div>
         </div>
       </motion.div>
+      
       <motion.button
       onClick={() => setMobileOpen((prev) => !prev)}
       className={sidebarStyles.mobileMenuButton}
@@ -229,6 +232,7 @@ const Sidebar = ({ user, isCollapsed, setIsCollapsed }) => {
                     ))}
                   </ul>
                </div>
+               
                <div className={sidebarStyles.mobileFooter}>
                 <Link onClick={() => setMobileOpen(false)}
                  to="https://www.hexagondigitalservices.com/contact" className={sidebarStyles.mobileFooterLink}>
