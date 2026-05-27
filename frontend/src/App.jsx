@@ -1,15 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useNavigate } from "react-router-dom";
+import { Routes, Route, useNavigate, Navigate, useLocation } from "react-router-dom";
+import axios from 'axios'; // Ensure axios is installed via npm/yarn
 import Layout from "./components/Layout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./components/Login";
 import Signup from "./components/Signup";
 
+const API_URL = "http://localhost:4000";
+
+// Helper to get transactions from localStorage
+const getTransactionsFromStorage = () => {
+    const saved = localStorage.getItem("transactions");
+    return saved ? JSON.parse(saved) : [];
+};
+
+// Protected Route Component
+const ProtectedRoute = ({ user, children }) => {
+    const localToken = localStorage.getItem("token");
+    const sessionToken = sessionStorage.getItem("token");
+    const hasToken = localToken || sessionToken;
+
+    if (!user || !hasToken) {
+        return <Navigate to="/login" replace />;
+    }
+    return children;
+};
+
+// Scroll to top when page reloads or a new route is visited
+const ScrollToTop = () => {
+    const location = useLocation();
+    useEffect(() => {
+        window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }, [location.pathname]);
+
+    return null;
+};
+
 const App = () => {
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(null);
+    const [transactions, setTransactions] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
-    
+
     // Auto load user session if it exists on page refresh
     useEffect(() => {
         const savedUser = localStorage.getItem("user") || sessionStorage.getItem("user");
@@ -20,6 +53,7 @@ const App = () => {
         }
     }, []);
 
+    // Persist Authentication state
     const persistAuth = (userObj, tokenStr, remember = false) => {
         try {
             if (remember) {
@@ -53,13 +87,78 @@ const App = () => {
         setToken(null);
     };
 
-    // FIXED: Parameter match name fixed from useData -> userData
-    // FIXED: Function spelling fixed from persisAuth -> persistAuth
+    // Update user data in both state and active storage
+    const updateUserData = (updatedUser) => {
+        setUser(updatedUser);
+
+        const localToken = localStorage.getItem("token");
+        const sessionToken = sessionStorage.getItem("token");
+
+        if (localToken) {
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+        } else if (sessionToken) {
+            sessionStorage.setItem("user", JSON.stringify(updatedUser));
+        }
+    };
+
+    // Bootstrap authentication on initialization
+    useEffect(() => {
+        (async () => {
+            try {
+                const localUserRaw = localStorage.getItem("user");
+                const sessionUserRaw = sessionStorage.getItem("user");
+                const localToken = localStorage.getItem("token");
+                const sessionToken = sessionStorage.getItem("token");
+
+                const storedUser = localUserRaw ? JSON.parse(localUserRaw) : sessionUserRaw ? JSON.parse(sessionUserRaw) : null;
+                const storedToken = localToken || sessionToken || null;
+                const tokenFromLocal = !!localToken;
+
+                if (storedUser) {
+                    setUser(storedUser);
+                    setToken(storedToken);
+                    setIsLoading(false);
+                    return;
+                }
+
+                if (storedToken) {
+                    try {
+                        const res = await axios.get(`${API_URL}/api/user/me`, {
+                            headers: { Authorization: `Bearer ${storedToken}` }
+                        });
+                        const profile = res.data;
+                        persistAuth(profile, storedToken, tokenFromLocal);
+                    } catch (fetchErr) {
+                        console.warn("Could not fetch profile with the stored token: ", fetchErr);
+                        clearAuth();
+                    }
+                }
+            } catch (err) {
+                console.error("error bootstrapping auth: ", err);
+            } finally {
+                setIsLoading(false);
+                try {
+                    setTransactions(getTransactionsFromStorage());
+                } catch (txErr) {
+                    console.error("Error loading transactions: ", txErr);
+                }
+            }
+        })();
+    }, []);
+
+    // Keep transactions synchronized with localStorage
+    useEffect(() => {
+        try {
+            localStorage.setItem("transactions", JSON.stringify(transactions));
+        } catch (err) {
+            console.error("error saving transactions: ", err);
+        }
+    }, [transactions]);
+
     const handleLogin = (userData, remember = false, tokenFromApi = null) => {
         persistAuth(userData, tokenFromApi, remember);
         navigate("/");
     };
-
 
     const handleSignup = (userData, remember = false, tokenFromApi = null) => {
         persistAuth(userData, tokenFromApi, remember);
@@ -71,14 +170,69 @@ const App = () => {
         navigate("/login");
     };
 
+    // Transaction Management State Actions
+    const addTransaction = (newTransaction) =>
+        setTransactions((p) => [newTransaction, ...p]);
+
+    const editTransaction = (id, updatedTransaction) =>
+        setTransactions((p) =>
+            p.map((t) => (t.id === id ? { ...updatedTransaction, id } : t))
+        );
+
+    const deleteTransaction = (id) =>
+        setTransactions((p) => p.filter((t) => t.id !== id));
+
+    const refreshTransactions = () =>
+        setTransactions(getTransactionsFromStorage());
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="flex flex-col items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+                    <p className="mt-4 text-gray-600">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <Routes>
-            <Route path="/login" element={<Login onLogin={handleLogin} />} />
-             <Route path="/signup" element={<Signup onSignup={handleSignup} />} />
-            <Route element={<Layout user={user} onLogout={handleLogout} />}>
-                <Route path="/" element={<Dashboard />} />
-            </Route>
-        </Routes>
+        <>
+            <ScrollToTop />
+            <Routes>
+                <Route path="/login" element={<Login onLogin={handleLogin} />} />
+                <Route path="/signup" element={<Signup onSignup={handleSignup} />} />
+                
+                <Route 
+                    element={
+                        <ProtectedRoute user={user}>
+                            <Layout 
+                                user={user} 
+                                onLogout={handleLogout} 
+                                transactions={transactions}
+                                addTransaction={addTransaction}
+                                editTransaction={editTransaction}
+                                deleteTransaction={deleteTransaction}
+                                refreshTransactions={refreshTransactions}
+                            />
+                        </ProtectedRoute>
+                    }
+                >
+                    <Route 
+                        path="/" 
+                        element={
+                            <Dashboard 
+                                transactions={transactions}
+                                addTransaction={addTransaction}
+                                editTransaction={editTransaction}
+                                deleteTransaction={deleteTransaction}
+                                refreshTransactions={refreshTransactions} 
+                            />
+                        }
+                    />
+                </Route>
+            </Routes>
+        </>
     );
 };
 

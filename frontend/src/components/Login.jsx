@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Mail, Lock, Eye, EyeOff } from 'lucide-react'; 
-import { useNavigate, Link } from 'react-router-dom'; // Fixed: Imported Link
+import { useNavigate, Link } from 'react-router-dom'; 
 import axios from 'axios'; 
 import { loginStyles } from '../assets/dummyStyles';
 
@@ -14,23 +14,13 @@ const Login = ({ onLogin, API_URL = "http://localhost:4000/api" }) => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
-    // To fetch the profile
+    // Helper to fetch profile if data structure is clean but lacks nested user details
     const fetchProfile = async (token) => {
         if (!token) return null;
         const res = await axios.get(`${API_URL}/user/me`, {
             headers: { Authorization: `Bearer ${token}` },
         });
         return res.data;
-    };
-
-    const persistAuth = (profile, token) => {
-        const storage = rememberMe ? localStorage : sessionStorage;
-        try {
-            if (token) storage.setItem("token", token);
-            if (profile) storage.setItem("user", JSON.stringify(profile));
-        } catch (err) {
-            console.error("Storage Error:", err);
-        }
     };
 
     // To login
@@ -48,7 +38,7 @@ const Login = ({ onLogin, API_URL = "http://localhost:4000/api" }) => {
             const data = res.data || {};
             const token = data.token ?? null; 
 
-            // To derive user profile
+            // Derive user profile from backend payload safely
             let profile = data.user ?? null;
             if (!profile) {
                 const copy = { ...data };
@@ -70,10 +60,12 @@ const Login = ({ onLogin, API_URL = "http://localhost:4000/api" }) => {
             }
             if (!profile) profile = { email };
             
-            persistAuth(profile, token); 
+            // REMOVED duplicate local/session storage code from here!
+            // App.jsx will now manage writing tokens & profiles to storage reliably.
 
             if (typeof onLogin === "function") {
                 try {
+                    // Pass parameters perfectly matching App.jsx signature: (userData, remember, token)
                     onLogin(profile, rememberMe, token);
                 } catch (callErr) {
                     console.warn("onLogin threw:", callErr);
