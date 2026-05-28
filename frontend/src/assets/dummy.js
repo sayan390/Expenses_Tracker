@@ -1,3 +1,4 @@
+ // src/data/dummyData.js
 import { v4 as uuidv4 } from 'uuid';
 
 // Generate random dates within the last 30 days
@@ -68,3 +69,4 @@ export const financialOverviewData = [
 
 // Colors for charts
 export const COLORS = ['#4f46e5', '#10b981', '#f97316', '#0ea5e9', '#8b5cf6', '#ec4899', '#f59e0b'];
+

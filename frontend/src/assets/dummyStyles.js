@@ -1,3 +1,5 @@
+// assets/dummyStyles.js
+
 export const dashboardStyles = {
   // Layout styles
   container: "min-h-screen p-4 md:p-6",

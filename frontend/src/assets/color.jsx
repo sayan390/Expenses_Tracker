@@ -1,3 +1,5 @@
+// constants/financeConstants.js
+// constants/financeConstants.js
 import { 
   Utensils, Home, Car, ShoppingCart, Gift, 
   TrendingUp, TrendingDown, DollarSign, 
@@ -5,6 +7,7 @@ import {
   Briefcase, CreditCard, ShoppingBag, 
   Film, Wifi, Heart
 } from "lucide-react";
+
 
 export const GAUGE_COLORS = {
   Income: { 

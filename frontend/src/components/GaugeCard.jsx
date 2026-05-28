@@ -1,9 +1,9 @@
 import React from "react";
-import { 
+import {
   ResponsiveContainer,
   RadialBarChart,
   RadialBar,
-  PolarAngleAxis
+  PolarAngleAxis,
 } from "recharts";
 
 const GaugeCard = ({
@@ -15,28 +15,33 @@ const GaugeCard = ({
   const { name = "Metric", value = 0, max = 100 } = gauge;
   const isNegative = value < 0;
   const absValue = Math.abs(value);
-  
+
   // For negative values, we'll show the absolute value in the chart but indicate it's negative in text
   const chartValue = isNegative ? absValue : value;
   const percentage = Math.min((absValue / max) * 100, 100);
 
   // Determine colors based on whether value is negative
-  const gradientStart = isNegative ? '#ef4444' : (colorInfo.gradientStart || '#00C49F');
-  const gradientEnd = isNegative ? '#dc2626' : (colorInfo.gradientEnd || '#0088FE');
-  const textColor = isNegative ? 'text-red-600' : (colorInfo.text || 'text-gray-800');
-  const percentColor = isNegative ? 'text-red-500' : 'text-gray-500';
+  const gradientStart = isNegative
+    ? "#ef4444"
+    : colorInfo.gradientStart || "#00C49F";
+  const gradientEnd = isNegative
+    ? "#dc2626"
+    : colorInfo.gradientEnd || "#0088FE";
+  const textColor = isNegative
+    ? "text-red-600"
+    : colorInfo.text || "text-gray-800";
+  const percentColor = isNegative ? "text-red-500" : "text-gray-500";
 
   return (
-    <div className="bg-white rounded-xl p-5 -mx-3 lg:-mx-0 md:-mx-5 shadow-sm flex flex-col items-center border border-gray-100">
-      <h3 className={`text-lg font-semibold mb-4 ${textColor}`}>
-        {name}
-      </h3>
+    <div className="bg-white rounded-xl p-5 -mx-3 lg:-mx-0 md:-mx-5 shadow-sm 
+    flex flex-col items-center border border-gray-100">
+      <h3 className={`text-lg font-semibold mb-4 ${textColor}`}>{name}</h3>
       <div className="w-full h-48">
         <ResponsiveContainer>
           <RadialBarChart
-            data={[{...gauge, value: chartValue}]}
+            data={[{ ...gauge, value: chartValue }]}
             cx="50%"
-            cy="40%"
+            cy="50%"
             startAngle={180}
             endAngle={0}
             innerRadius="70%"
@@ -52,25 +57,25 @@ const GaugeCard = ({
 
             <RadialBar
               minAngle={15}
-              background={{ fill: '#f3f4f6' }}
+              background={{ fill: "#f3f4f6" }}
               dataKey="value"
               cornerRadius="50%"
               fill={`url(#${name}Gradient)`}
             />
 
-            <text 
-              x="50%" 
-              y="50%" 
-              textAnchor="middle" 
+            <text
+              x="50%"
+              y="50%"
+              textAnchor="middle"
               dominantBaseline="middle"
               className={`text-2xl font-bold ${textColor}`}
             >
-              {isNegative ? '-' : ''}${Math.round(absValue).toLocaleString()}
+              {isNegative ? "-" : ""}${Math.round(absValue).toLocaleString()}
             </text>
-            <text 
-              x="50%" 
-              y="65%" 
-              textAnchor="middle" 
+            <text
+              x="50%"
+              y="65%"
+              textAnchor="middle"
               dominantBaseline="middle"
               className={`text-sm ${percentColor}`}
             >
@@ -78,7 +83,13 @@ const GaugeCard = ({
             </text>
 
             <defs>
-              <linearGradient id={`${name}Gradient`} x1="0" y1="0" x2="0" y2="1">
+              <linearGradient
+                id={`${name}Gradient`}
+                x1="0"
+                y1="0"
+                x2="0"
+                y2="1"
+              >
                 <stop offset="0%" stopColor={gradientStart} />
                 <stop offset="100%" stopColor={gradientEnd} />
               </linearGradient>
@@ -92,9 +103,7 @@ const GaugeCard = ({
             Negative savings
           </p>
         )}
-        <p className="text-sm text-gray-500">
-          {timeFrameLabel} data
-        </p>
+        <p className="text-sm text-gray-500">{timeFrameLabel} data</p>
       </div>
     </div>
   );
@@ -102,4 +111,4 @@ const GaugeCard = ({
 
 export default GaugeCard;
 
-// for Gauge UI like Speedometer
+// for Gauge UI like speedometer

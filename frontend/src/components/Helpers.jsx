@@ -30,7 +30,7 @@ export const getTimeFrameRange = (timeFrame) => {
   // default -> monthly
   const startOfMonth = new Date(start.getFullYear(), start.getMonth(), 1);
   return { start: startOfMonth, end: new Date(now), label: "This Month" };
-}; // to filter according to day, month, year
+}; //to filter according to day, month, year
 
 export const getPreviousTimeFrameRange = (timeFrame) => {
   const now = new Date();
@@ -47,7 +47,7 @@ export const getPreviousTimeFrameRange = (timeFrame) => {
       23,
       59,
       59,
-      999
+      999,
     );
     return {
       start: yesterday,
@@ -70,7 +70,7 @@ export const getPreviousTimeFrameRange = (timeFrame) => {
     const startOfLastMonth = new Date(
       start.getFullYear(),
       start.getMonth() - 1,
-      1
+      1,
     );
     startOfLastMonth.setHours(0, 0, 0, 0);
     const endOfLastMonth = new Date(start.getFullYear(), start.getMonth(), 0);
@@ -92,7 +92,7 @@ export const getPreviousTimeFrameRange = (timeFrame) => {
       23,
       59,
       59,
-      999
+      999,
     );
     return { start: startOfLastYear, end: endOfLastYear, label: "Last Year" };
   }
@@ -101,7 +101,7 @@ export const getPreviousTimeFrameRange = (timeFrame) => {
   const startOfLastMonth = new Date(
     start.getFullYear(),
     start.getMonth() - 1,
-    1
+    1,
   );
   startOfLastMonth.setHours(0, 0, 0, 0);
   const endOfLastMonth = new Date(start.getFullYear(), start.getMonth(), 0);
@@ -120,7 +120,7 @@ export const calculateData = (transactions) => {
       }
       return data;
     },
-    { income: 0, expenses: 0 }
+    { income: 0, expenses: 0 },
   );
 
   return { ...totals, savings: totals.income - totals.expenses };
@@ -159,11 +159,10 @@ export const generateChartPoints = (timeFrame) => {
       });
     }
   } else if (timeFrame === "monthly") {
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const daysInMonth = new Date(
       now.getFullYear(),
       now.getMonth() + 1,
-      0
+      0,
     ).getDate();
 
     for (let i = 1; i <= daysInMonth; i++) {
@@ -185,11 +184,10 @@ export const generateChartPoints = (timeFrame) => {
     }
   } else {
     // fallback -> monthly
-    const start = new Date(now.getFullYear(), now.getMonth(), 1);
     const daysInMonth = new Date(
       now.getFullYear(),
       now.getMonth() + 1,
-      0
+      0,
     ).getDate();
 
     for (let i = 1; i <= daysInMonth; i++) {
@@ -204,5 +202,3 @@ export const generateChartPoints = (timeFrame) => {
 
   return points;
 };
-
-//helper functions to help in filtering
